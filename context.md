@@ -1,4 +1,13 @@
-# Extension Icon Loading Error Fix
+# Grok Voice Extension - Fix History and Updates
+
+## Latest Update: Rebranding from Atlas to Grok
+- Changed all references from "Atlas" to "Grok" throughout the extension
+- Updated manifest.json name and description
+- Updated all UI text and wake word to "Hey Grok"
+- Changed API endpoint to grok-extension-chat-voice.vercel.app
+- Version bumped to 0.4.0
+
+## Previous: Extension Icon Loading Error Fix
 
 ## Issue
 Extension fails to load with error: "Could not load icon 'assets/icon-16.png' specified in 'icons'"

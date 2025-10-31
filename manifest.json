@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
-  "name": "Atlas Voice Panel",
-  "version": "0.3.2",
-  "description": "Voice AI assistant with Desktop Commander - screen capture and automation capabilities",
+  "name": "Grok Voice Panel",
+  "version": "0.4.0",
+  "description": "Grok voice AI assistant with Desktop Commander - screen capture and automation capabilities",
   "permissions": [
     "storage",
     "sidePanel",
@@ -18,7 +18,7 @@
   ],
   "host_permissions": [
     "https://api.openai.com/*",
-    "https://atlas-extension-chat-voice.vercel.app/*",
+    "https://grok-extension-chat-voice.vercel.app/*",
     "http://localhost:8787/*",
     "<all_urls>"
   ],
@@ -32,7 +32,7 @@
     "type": "module"
   },
   "action": {
-    "default_title": "Atlas Voice Panel",
+    "default_title": "Grok Voice Panel",
     "default_icon": {
       "16": "assets/icon-16.png",
       "48": "assets/icon-48.png",

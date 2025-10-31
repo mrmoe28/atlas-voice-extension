@@ -39,15 +39,15 @@ chrome.runtime.onInstalled.addListener(async (details) => {
 
   // Initialize update manager on install or update
   if (details.reason === 'install' || details.reason === 'update') {
-    console.log(`Atlas ${details.reason}ed: v${chrome.runtime.getManifest().version}`);
+    console.log(`Grok ${details.reason}ed: v${chrome.runtime.getManifest().version}`);
     await updateManager.initialize();
 
     // Show updated notification if this was an update
     if (details.reason === 'update') {
-      chrome.notifications.create('atlas-updated', {
+      chrome.notifications.create('grok-updated', {
         type: 'basic',
         iconUrl: chrome.runtime.getURL('assets/icon-128.png'),
-        title: 'Atlas Updated!',
+        title: 'Grok Updated!',
         message: `Successfully updated to v${chrome.runtime.getManifest().version}`,
         priority: 1
       });
@@ -55,7 +55,7 @@ chrome.runtime.onInstalled.addListener(async (details) => {
 
     // Show background mode instructions on first install
     if (details.reason === 'install') {
-      chrome.notifications.create('atlas-background-mode', {
+      chrome.notifications.create('grok-background-mode', {
         type: 'basic',
         iconUrl: chrome.runtime.getURL('assets/icon-128.png'),
         title: 'Enable Background Mode',
@@ -77,7 +77,7 @@ chrome.action.onClicked.addListener(async (tab) => {
 
 // Initialize update manager and keepalive on startup
 chrome.runtime.onStartup.addListener(async () => {
-  console.log('Atlas starting up...');
+  console.log('Grok starting up...');
   await updateManager.initialize();
   startKeepalive();
 });

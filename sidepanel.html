@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Atlas Voice</title>
+  <title>Grok Voice</title>
   <link rel="stylesheet" href="styles.css" />
   <!-- PDF.js library for PDF text extraction (local copy for CSP compliance) -->
   <script src="lib/pdf.min.js"></script>
@@ -14,7 +14,7 @@
     <div style="display:flex; align-items:center; gap:10px;">
       <span style="font-size:24px;">🎉</span>
       <div style="flex:1;">
-        <strong style="font-size:15px;">Atlas Update Available!</strong>
+        <strong style="font-size:15px;">Grok Update Available!</strong>
         <div id="update-version-text" style="margin-top:4px; font-size:13px; opacity:0.95;">
           Version <span id="update-version"></span> is ready to download.
         </div>
@@ -49,7 +49,7 @@
           <line x1="3" y1="18" x2="21" y2="18"/>
         </svg>
       </button>
-      <h1>Atlas Voice</h1>
+      <h1>Grok Voice</h1>
       <div class="connection-status">
         <span class="status-dot" id="statusDot"></span>
       </div>
@@ -81,7 +81,7 @@
         <div class="setting-item">
           <label>Server URL (Optional)</label>
           <input id="serverUrl"
-                 value="https://atlas-voice-extension.vercel.app"
+                 value="https://grok-voice-extension.vercel.app"
                  placeholder="Server URL"
                  class="server-input" />
           <p class="mode-description">Leave blank to use your API key above, or use a custom server</p>
@@ -126,12 +126,12 @@
             <input type="checkbox" id="wakeWordMode" />
             <span>Wake Word Detection</span>
           </label>
-          <p class="mode-description">Activate Atlas by saying "Hey Atlas"</p>
+          <p class="mode-description">Activate Grok by saying "Hey Grok"</p>
         </div>
 
         <div class="setting-item">
           <label for="temperatureSlider" class="slider-label">
-            <span>Atlas Creativity</span>
+            <span>Grok Creativity</span>
             <span class="slider-value" id="temperatureValue">0.7</span>
           </label>
           <div class="slider-container">
@@ -155,16 +155,16 @@
             <input type="checkbox" id="memoryEnabled" />
             <span>Memory & Learning</span>
           </label>
-          <p class="mode-description">Atlas remembers conversations and learns from your patterns</p>
+          <p class="mode-description">Grok remembers conversations and learns from your patterns</p>
         </div>
 
         <div class="setting-item">
           <label for="specialInstructions" class="text-label">Special Instructions</label>
           <textarea id="specialInstructions" 
                     class="special-instructions-textarea" 
-                    placeholder="Add custom instructions for Atlas (e.g., 'Always be concise', 'Use technical terms', 'Be friendly and casual')"
+                    placeholder="Add custom instructions for Grok (e.g., 'Always be concise', 'Use technical terms', 'Be friendly and casual')"
                     rows="2"></textarea>
-          <p class="mode-description">Customize how Atlas responds to you</p>
+          <p class="mode-description">Customize how Grok responds to you</p>
         </div>
 
         <div class="setting-item">
@@ -173,7 +173,7 @@
             <button id="viewKnowledgeBtn" class="knowledge-btn">View Knowledge</button>
             <button id="clearMemoryBtn" class="knowledge-btn secondary">Clear Memory</button>
           </div>
-          <p class="mode-description">Manage Atlas's memory and learned patterns</p>
+          <p class="mode-description">Manage Grok's memory and learned patterns</p>
         </div>
 
         <div class="setting-actions">
@@ -407,7 +407,7 @@
             </div>
 
             <div class="help-footer">
-              <p><strong>💡 Tip:</strong> Atlas Voice understands natural language. Just speak naturally and it will understand your intent!</p>
+              <p><strong>💡 Tip:</strong> Grok Voice understands natural language. Just speak naturally and it will understand your intent!</p>
               <p><strong>🎯 Note:</strong> Desktop Commander mode must be enabled for system control commands.</p>
             </div>
           </div>
@@ -469,7 +469,7 @@
         <!-- Wake Word Indicator -->
         <div id="wakeWordIndicator" class="wake-word-indicator" style="display: none;">
           <span class="wake-word-pulse">👂</span>
-          <span class="wake-word-text">Listening for "Hey Atlas"</span>
+          <span class="wake-word-text">Listening for "Hey Grok"</span>
         </div>
 
         <div class="voice-orb-large" id="voiceOrb">
@@ -517,7 +517,7 @@
       <!-- Voice Control Container -->
       <div class="voice-controls-container">
         <!-- Mute Button -->
-        <button id="muteBtn" class="mute-btn" disabled title="Mute Atlas voice">
+        <button id="muteBtn" class="mute-btn" disabled title="Mute Grok voice">
           <svg id="muteIcon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
             <path d="M15.54 8.46a5 5 0 0 1 0 7.07"/>
@@ -555,8 +555,8 @@
     <!-- Permission Popup Modal -->
     <div class="permission-modal" id="permissionModal">
       <div class="permission-content">
-        <h2>Welcome to Atlas Voice!</h2>
-        <p>To use voice features, Atlas Voice needs microphone access.</p>
+        <h2>Welcome to Grok Voice!</h2>
+        <p>To use voice features, Grok Voice needs microphone access.</p>
         <div class="permission-steps">
           <div class="permission-step">
             <div class="step-number">1</div>

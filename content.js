@@ -1,7 +1,7 @@
-// Atlas Voice Panel - Content Script for Browser Automation
+// Grok Voice Panel - Content Script for Browser Automation
 // This script runs in web pages to enable browser automation
 
-console.log('Atlas Voice Panel content script loaded');
+console.log('Grok Voice Panel content script loaded');
 
 // Listen for messages from the side panel
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
@@ -1586,10 +1586,10 @@ function handleDebugElements(request, sendResponse) {
   }
 }
 
-// ===== ATLAS CONTROL TOGGLE =====
-// Floating button to pause/resume Atlas control
+// ===== GROK CONTROL TOGGLE =====
+// Floating button to pause/resume Grok control
 
-let atlasControlActive = false;
+let grokControlActive = false;
 let controlToggleButton = null;
 
 // Create floating control toggle
@@ -1598,7 +1598,7 @@ function createControlToggle() {
 
   // Create container
   const container = document.createElement('div');
-  container.id = 'atlas-control-toggle';
+  container.id = 'grok-control-toggle';
   container.style.cssText = `
     position: fixed;
     bottom: 20px;
@@ -1639,7 +1639,7 @@ function createControlToggle() {
 
   // Button text
   const text = document.createElement('span');
-  text.textContent = 'Atlas Paused';
+  text.textContent = 'Grok Paused';
 
   button.appendChild(dot);
   button.appendChild(text);
@@ -1658,13 +1658,13 @@ function createControlToggle() {
 
   // Click handler
   button.addEventListener('click', () => {
-    atlasControlActive = !atlasControlActive;
+    grokControlActive = !grokControlActive;
     updateControlToggle();
 
     // Notify sidepanel of state change
     chrome.runtime.sendMessage({
-      action: 'atlasControlToggle',
-      active: atlasControlActive
+      action: 'grokControlToggle',
+      active: grokControlActive
     });
 
     // Visual feedback
@@ -1684,18 +1684,18 @@ function updateControlToggle() {
 
   const { button, dot, text } = controlToggleButton;
 
-  if (atlasControlActive) {
-    // Atlas is in control
+  if (grokControlActive) {
+    // Grok is in control
     button.style.background = 'linear-gradient(135deg, #11998e 0%, #38ef7d 100%)';
     dot.style.background = '#38ef7d';
     dot.style.boxShadow = '0 0 10px rgba(56, 239, 125, 0.5)';
-    text.textContent = 'Atlas Active';
+    text.textContent = 'Grok Active';
   } else {
-    // User has control (Atlas paused)
+    // User has control (Grok paused)
     button.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
     dot.style.background = '#ff4444';
     dot.style.boxShadow = '0 0 10px rgba(255, 68, 68, 0.5)';
-    text.textContent = 'Atlas Paused';
+    text.textContent = 'Grok Paused';
   }
 }
 
@@ -1716,14 +1716,14 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     removeControlToggle();
     sendResponse({ success: true });
   } else if (request.action === 'getControlState') {
-    sendResponse({ active: atlasControlActive });
+    sendResponse({ active: grokControlActive });
   } else if (request.action === 'updateControlState') {
-    atlasControlActive = request.active;
+    grokControlActive = request.active;
     updateControlToggle();
     sendResponse({ success: true });
   }
   return true;
 });
 
-// Create toggle when page loads (only if Atlas is connected)
-console.log('✅ Atlas control toggle ready');
+// Create toggle when page loads (only if Grok is connected)
+console.log('✅ Grok control toggle ready');

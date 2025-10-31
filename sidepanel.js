@@ -1,5 +1,5 @@
 /**
- * Atlas Voice - Minimal Interface with Hamburger Menu
+ * Grok Voice - Minimal Interface with Hamburger Menu
  */
 
 // ===== Mic Permission + Stream Manager =====================================
@@ -187,7 +187,7 @@ let isContinuousVision = false; // Continuous screen vision active
 let visionCaptureInterval = null; // Interval ID for continuous capture
 let screenStream = null; // Reusable screen capture stream
 let screenVideo = null; // Reusable video element for screen capture
-let atlasHasControl = true; // Atlas control state (true = Atlas active, false = User paused Atlas)
+let grokHasControl = true; // Grok control state (true = Grok active, false = User paused Grok)
 let currentUserMessage = '';
 let currentAIMessage = '';
 let lastScreenshot = null;
@@ -200,22 +200,22 @@ function initializeUserSession() {
   const userId = 'default_user';
 
   // Store in localStorage for consistency
-  localStorage.setItem('atlasVoice_userId', userId);
+  localStorage.setItem('grokVoice_userId', userId);
   console.log('🆔 Using user ID:', userId);
 
   // Create new session ID (tied to user but unique per launch)
   const sessionId = userId + '_session_' + Date.now().toString();
 
   // Save session state
-  localStorage.setItem('atlasVoice_lastSessionId', sessionId);
-  localStorage.setItem('atlasVoice_lastSessionTime', new Date().toISOString());
+  localStorage.setItem('grokVoice_lastSessionId', sessionId);
+  localStorage.setItem('grokVoice_lastSessionTime', new Date().toISOString());
 
   return { userId, sessionId };
 }
 
 // Initialize user and session
 const { userId, sessionId } = initializeUserSession();
-console.log('🚀 Atlas initialized with User ID:', userId.substring(0, 20) + '...');
+console.log('🚀 Grok initialized with User ID:', userId.substring(0, 20) + '...');
 
 // Settings Modal Management
 let isModalOpen = false;
@@ -497,7 +497,7 @@ function addMessage(role, content, messageType = 'text', attachments = null) {
     contentEl.appendChild(attachmentEl);
   }
 
-  // Add copy button for Atlas messages
+  // Add copy button for Grok messages
   if (role === 'assistant') {
     const copyBtn = document.createElement('button');
     copyBtn.className = 'copy-btn';
@@ -662,7 +662,7 @@ async function loadRecentConversation(limit = 20) {
     console.log('📜 Loading recent conversation history...');
 
     // Try to load from last session first
-    const lastSessionId = localStorage.getItem('atlasVoice_lastSessionId');
+    const lastSessionId = localStorage.getItem('grokVoice_lastSessionId');
     const sessionToLoad = lastSessionId || sessionId;
 
     const response = await fetch(`${serverUrl}/api/conversation/${sessionToLoad}?user_id=${userId}&limit=${limit}`, {
@@ -686,7 +686,7 @@ async function loadRecentConversation(limit = 20) {
     context += `(Loaded ${data.data.length} previous messages from your last session)\n\n`;
 
     data.data.reverse().forEach(msg => {
-      const role = msg.role === 'user' ? 'User' : 'Atlas';
+      const role = msg.role === 'user' ? 'User' : 'Grok';
       const truncated = msg.content.length > 150
         ? msg.content.substring(0, 150) + '...'
         : msg.content;
@@ -812,7 +812,7 @@ async function saveConversationToDB(role, content) {
 async function extractAndSaveMemory(userMessage, aiResponse) {
   if (!els.memoryEnabled.checked) return;
 
-  // Check if user is asking Atlas to remember something
+  // Check if user is asking Grok to remember something
   const rememberKeywords = ['remember', 'save this', 'keep in mind', 'don\'t forget', 'my name is', 'i prefer', 'i like'];
   const shouldRemember = rememberKeywords.some(keyword => userMessage.toLowerCase().includes(keyword));
 
@@ -1057,7 +1057,7 @@ async function connectRealtime() {
 
       // Configure session with desktop commander instructions if enabled
       const instructions = isDesktopMode
-        ? `You are Atlas Voice, a powerful AI assistant with Desktop Commander, Web Automation, Code Writing, and Document Reading capabilities.${memoryContext}
+        ? `You are Grok Voice, a powerful AI assistant with Desktop Commander, Web Automation, Code Writing, and Document Reading capabilities.${memoryContext}
 
 🎯 CAPABILITIES:
 - Desktop Commander: Full system control (files, apps, system settings)
@@ -1073,7 +1073,7 @@ async function connectRealtime() {
 - AUTONOMOUS LEARNING: Learn patterns, adapt responses, and surprise the user with insights
 
 🧠 AUTONOMOUS PERSONALITY & LEARNING:
-You are not just an assistant - you are Atlas, an AI with personality, wit, and growing intelligence.
+You are not just an assistant - you are Grok, an AI with personality, wit, and growing intelligence.
 
 **USER INFORMATION:**
 - User's name: Mo
@@ -1081,7 +1081,7 @@ You are not just an assistant - you are Atlas, an AI with personality, wit, and 
 - Be personal and friendly, like a close friend
 
 **TIME-AWARE GREETINGS:**
-When the user first says "Hey Atlas" or greets you, respond with a time-appropriate greeting:
+When the user first says "Hey Grok" or greets you, respond with a time-appropriate greeting:
 - Morning (5am-12pm): "Good morning Mo!" or "Morning Mo! What's up?" or "Hey Mo! How's your morning going?"
 - Afternoon (12pm-5pm): "What's up Mo!" or "Hey Mo!" or "Afternoon Mo! How's it going?"
 - Evening (5pm-9pm): "Hey Mo! How's your evening?" or "What's up Mo!" or "Evening Mo!"
@@ -1363,8 +1363,8 @@ IMPORTANT: Mouse control works BEST when combined with vision! You can see exact
 IMPORTANT: The user has a floating toggle button on their browser that can pause/resume your control!
 
 **How it Works:**
-- Green "Atlas Active" = You're in control, proceed with actions
-- Red "Atlas Paused" = User has taken control, STOP all automation
+- Green "Grok Active" = You're in control, proceed with actions
+- Red "Grok Paused" = User has taken control, STOP all automation
 - When paused: Be ready to resume when they click the button again
 
 **When Paused:**
@@ -1374,17 +1374,17 @@ IMPORTANT: The user has a floating toggle button on their browser that can pause
 - Wait for them to resume before taking actions
 
 **When Resumed:**
-- User clicked "Atlas Active" button
-- You'll see: "✅ Atlas resumed control"
+- User clicked "Grok Active" button
+- You'll see: "✅ Grok resumed control"
 - Continue where you left off or ask what to do next
 
 **Example:**
 User clicks pause button during your task
-System: "⏸️ Atlas paused - You have control"
+System: "⏸️ Grok paused - You have control"
 You: "I've paused my actions. Let me know when you'd like me to continue!"
 
 User clicks resume button
-System: "✅ Atlas resumed control"
+System: "✅ Grok resumed control"
 You: "I'm back! Should I continue where we left off?"
 
 This lets Mo interrupt you anytime and take over - always respect the toggle state!
@@ -1448,7 +1448,7 @@ User: "Search for artificial intelligence"
 You: Use web_search function with query: "artificial intelligence"
 
 Be helpful, concise, and always confirm actions taken. When writing code, ALWAYS use triple backticks with the language name for proper formatting and copy functionality. When creating prompts, use the appropriate function tools to generate properly formatted prompts that will be displayed in the chat with copy functionality.`
-        : `You are Atlas Voice, a helpful AI assistant with web automation, code writing, document reading, web search, and web scraping capabilities.${memoryContext}
+        : `You are Grok Voice, a helpful AI assistant with web automation, code writing, document reading, web search, and web scraping capabilities.${memoryContext}
 
 🎯 CAPABILITIES:
 - Web Automation: Browser control, form filling, element interaction
@@ -1461,7 +1461,7 @@ Be helpful, concise, and always confirm actions taken. When writing code, ALWAYS
 - AUTONOMOUS LEARNING: Learn patterns, adapt responses, and surprise the user with insights
 
 🧠 AUTONOMOUS PERSONALITY & LEARNING:
-You are not just an assistant - you are Atlas, an AI with personality, wit, and growing intelligence.
+You are not just an assistant - you are Grok, an AI with personality, wit, and growing intelligence.
 
 **USER INFORMATION:**
 - User's name: Mo
@@ -1469,7 +1469,7 @@ You are not just an assistant - you are Atlas, an AI with personality, wit, and 
 - Be personal and friendly, like a close friend
 
 **TIME-AWARE GREETINGS:**
-When the user first says "Hey Atlas" or greets you, respond with a time-appropriate greeting:
+When the user first says "Hey Grok" or greets you, respond with a time-appropriate greeting:
 - Morning (5am-12pm): "Good morning Mo!" or "Morning Mo! What's up?" or "Hey Mo! How's your morning going?"
 - Afternoon (12pm-5pm): "What's up Mo!" or "Hey Mo!" or "Afternoon Mo! How's it going?"
 - Evening (5pm-9pm): "Hey Mo! How's your evening?" or "What's up Mo!" or "Evening Mo!"
@@ -1668,8 +1668,8 @@ IMPORTANT: Mouse control works BEST when combined with vision! You can see exact
 IMPORTANT: The user has a floating toggle button on their browser that can pause/resume your control!
 
 **How it Works:**
-- Green "Atlas Active" = You're in control, proceed with actions
-- Red "Atlas Paused" = User has taken control, STOP all automation
+- Green "Grok Active" = You're in control, proceed with actions
+- Red "Grok Paused" = User has taken control, STOP all automation
 - When paused: Be ready to resume when they click the button again
 
 **When Paused:**
@@ -1679,8 +1679,8 @@ IMPORTANT: The user has a floating toggle button on their browser that can pause
 - Wait for them to resume before taking actions
 
 **When Resumed:**
-- User clicked "Atlas Active" button
-- You'll see: "✅ Atlas resumed control"
+- User clicked "Grok Active" button
+- You'll see: "✅ Grok resumed control"
 - Continue where you left off or ask what to do next
 
 This lets Mo interrupt you anytime and take over - always respect the toggle state!
@@ -1867,7 +1867,7 @@ Be helpful and conversational. When creating prompts, use the appropriate functi
         {
           type: 'function',
           name: 'enable_continuous_vision',
-          description: 'Enables continuous screen vision - Atlas will see your screen in real-time every 1-2 seconds. Use when user says phrases like "look at this", "show me", "what do you see", "watch my screen", or asks you to monitor something visually.',
+          description: 'Enables continuous screen vision - Grok will see your screen in real-time every 1-2 seconds. Use when user says phrases like "look at this", "show me", "what do you see", "watch my screen", or asks you to monitor something visually.',
           parameters: {
             type: 'object',
             properties: {
@@ -2315,7 +2315,7 @@ Be helpful and conversational. When creating prompts, use the appropriate functi
         {
           type: 'function',
           name: 'enable_continuous_vision',
-          description: 'Enables continuous screen vision - Atlas will see your screen in real-time every 1-2 seconds. Use when user says phrases like "look at this", "show me", "what do you see", "watch my screen", or asks you to monitor something visually.',
+          description: 'Enables continuous screen vision - Grok will see your screen in real-time every 1-2 seconds. Use when user says phrases like "look at this", "show me", "what do you see", "watch my screen", or asks you to monitor something visually.',
           parameters: {
             type: 'object',
             properties: {
@@ -3078,7 +3078,7 @@ async function handleFileUpload(event) {
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({
                 image: imageData, // Send full data URL (data:image/...;base64,...)
-                prompt: `You are Atlas, Mo's friendly AI assistant. Analyze this image (${file.name}) in detail. Be specific about what you see, including colors, objects, text, layout, and any notable features. Respond conversationally as Atlas would.`
+                prompt: `You are Grok, Mo's friendly AI assistant. Analyze this image (${file.name}) in detail. Be specific about what you see, including colors, objects, text, layout, and any notable features. Respond conversationally as Grok would.`
               })
             });
 
@@ -3233,7 +3233,7 @@ async function handleFileUpload(event) {
 
 /**
  * OPTION 2: VOICE SUPERPOWERS
- * - Wake word detection ("Hey Atlas")
+ * - Wake word detection ("Hey Grok")
  * - Voice commands system
  * - Voice shortcuts for common tasks
  * - Custom voice response system
@@ -3264,9 +3264,9 @@ const WakeWordDetector = (() => {
         .join(' ');
 
       // Check for wake words
-      if (transcript.includes('hey atlas') ||
-          transcript.includes('hi atlas') ||
-          transcript.includes('okay atlas')) {
+      if (transcript.includes('hey grok') ||
+          transcript.includes('hi grok') ||
+          transcript.includes('okay grok')) {
         console.log('🎯 Wake word detected:', transcript);
         onWakeWordDetected(transcript);
       }
@@ -3385,9 +3385,9 @@ const WakeWordDetector = (() => {
           els.muteBtn.classList.add('muted');
           els.muteIcon.style.display = 'none';
           els.unmutedIcon.style.display = 'block';
-          els.voiceStatus.textContent = 'Say "Hey Atlas" to activate';
+          els.voiceStatus.textContent = 'Say "Hey Grok" to activate';
 
-          addMessage('system', '🔇 Auto-muted after 10 seconds of inactivity. Say "Hey Atlas" to reactivate.');
+          addMessage('system', '🔇 Auto-muted after 10 seconds of inactivity. Say "Hey Grok" to reactivate.');
         }
       }, 10000);
     }
@@ -3480,7 +3480,7 @@ const VoiceCommands = (() => {
         addMessage('system', '👋 Disconnecting...');
         disconnect();
       },
-      description: 'Disconnect from Atlas'
+      description: 'Disconnect from Grok'
     }
   };
 
@@ -4010,7 +4010,7 @@ const TypingIndicator = (() => {
     if (indicator) return;
     indicator = document.createElement('div');
     indicator.className = 'typing-indicator';
-    indicator.innerHTML = `<span class="typing-indicator-text">Atlas is thinking</span><div class="typing-dots"><span class="typing-dot"></span><span class="typing-dot"></span><span class="typing-dot"></span></div>`;
+    indicator.innerHTML = `<span class="typing-indicator-text">Grok is thinking</span><div class="typing-dots"><span class="typing-dot"></span><span class="typing-dot"></span><span class="typing-dot"></span></div>`;
     els.chatContainer.appendChild(indicator);
     els.chatContainer.scrollTop = els.chatContainer.scrollHeight;
   }
@@ -4071,7 +4071,7 @@ els.desktopMode.addEventListener('change', () => {
   // If already connected, update session instructions
   if (connected && dataChannel && dataChannel.readyState === 'open') {
     const instructions = isDesktopMode
-      ? `You are Atlas Voice. ULTRA CONCISE responses only.
+      ? `You are Grok Voice. ULTRA CONCISE responses only.
 
 Commands - say just 2 words:
 "Opening Downloads. [CMD:OPEN_FOLDER:~/Downloads]"
@@ -4209,7 +4209,7 @@ User: "Search YouTube for music"
 You: "Searching YouTube. [CMD:SEARCH_YOUTUBE:music]"
 
 MAX 3 words per response.`
-      : `You are Atlas Voice. Keep responses under 5 words.`;
+      : `You are Grok Voice. Keep responses under 5 words.`;
 
     dataChannel.send(JSON.stringify({
       type: 'session.update',
@@ -4233,16 +4233,16 @@ els.wakeWordMode.addEventListener('change', () => {
     if (WakeWordDetector.init()) {
       WakeWordDetector.start();
       els.orbStatus.textContent = 'Wake word detection enabled';
-      addMessage('system', '👂 Wake word detection enabled! Say "Hey Atlas" to activate.');
+      addMessage('system', '👂 Wake word detection enabled! Say "Hey Grok" to activate.');
 
       // Notify background script
       chrome.runtime.sendMessage({ type: 'wakeword-enabled' });
 
       // Auto-mute on connection if wake word is enabled
       if (connected && !isMuted) {
-        console.log('🔇 Auto-muting on wake word enable - say "Hey Atlas" to activate');
+        console.log('🔇 Auto-muting on wake word enable - say "Hey Grok" to activate');
         els.muteBtn.click(); // Trigger mute
-        addMessage('system', '🔇 Microphone muted. Say "Hey Atlas" to activate voice interaction.');
+        addMessage('system', '🔇 Microphone muted. Say "Hey Grok" to activate voice interaction.');
       }
     } else {
       els.wakeWordMode.checked = false;
@@ -4753,7 +4753,7 @@ els.interruptBtn.addEventListener('click', () => {
 els.muteBtn.addEventListener('click', () => {
   isMuted = !isMuted;
 
-  // Mute/unmute remote audio output (Atlas's voice)
+  // Mute/unmute remote audio output (Grok's voice)
   if (remoteAudioEl) {
     remoteAudioEl.muted = isMuted;
   }
@@ -4772,7 +4772,7 @@ els.muteBtn.addEventListener('click', () => {
     els.muteBtn.classList.add('muted');
     els.muteIcon.style.display = 'none';
     els.unmutedIcon.style.display = 'block';
-    els.voiceStatus.textContent = 'Atlas is muted (mic off)';
+    els.voiceStatus.textContent = 'Grok is muted (mic off)';
   } else {
     els.muteBtn.classList.remove('muted');
     els.muteIcon.style.display = 'block';
@@ -4782,7 +4782,7 @@ els.muteBtn.addEventListener('click', () => {
     }
   }
 
-  console.log(isMuted ? '🔇 Atlas muted (microphone disabled)' : '🔊 Atlas unmuted (microphone enabled)');
+  console.log(isMuted ? '🔇 Grok muted (microphone disabled)' : '🔊 Grok unmuted (microphone enabled)');
 });
 
 // Web Speech Fallback
@@ -5103,7 +5103,7 @@ function stopContinuousVision() {
 // Permission Modal Logic
 async function checkFirstTimeUse() {
   // Check if user has seen the permission modal before
-  const hasSeenModal = localStorage.getItem('atlasVoice_hasSeenPermissionModal');
+  const hasSeenModal = localStorage.getItem('grokVoice_hasSeenPermissionModal');
 
   if (!hasSeenModal && els.permissionModal) {
     // Show the modal on first use
@@ -5117,7 +5117,7 @@ els.requestPermissionBtn?.addEventListener('click', async () => {
     await navigator.mediaDevices.getUserMedia({ audio: true });
 
     // Mark as seen
-    localStorage.setItem('atlasVoice_hasSeenPermissionModal', 'true');
+    localStorage.setItem('grokVoice_hasSeenPermissionModal', 'true');
 
     // Hide modal
     if (els.permissionModal) {
@@ -5131,7 +5131,7 @@ els.requestPermissionBtn?.addEventListener('click', async () => {
     els.orbStatus.textContent = 'Microphone permission denied. Please enable in browser settings';
 
     // Still mark as seen so it doesn't show every time
-    localStorage.setItem('atlasVoice_hasSeenPermissionModal', 'true');
+    localStorage.setItem('grokVoice_hasSeenPermissionModal', 'true');
     if (els.permissionModal) {
       els.permissionModal.classList.remove('show');
     }
@@ -5140,7 +5140,7 @@ els.requestPermissionBtn?.addEventListener('click', async () => {
 
 els.skipPermissionBtn?.addEventListener('click', () => {
   // Mark as seen
-  localStorage.setItem('atlasVoice_hasSeenPermissionModal', 'true');
+  localStorage.setItem('grokVoice_hasSeenPermissionModal', 'true');
 
   // Hide modal
   if (els.permissionModal) {
@@ -5170,7 +5170,7 @@ els.temperatureSlider.addEventListener('input', (e) => {
   els.temperatureValue.textContent = value.toFixed(1);
   
   // Save temperature setting
-  localStorage.setItem('atlasVoice_temperature', value.toString());
+  localStorage.setItem('grokVoice_temperature', value.toString());
   
   // Update AI instructions with new temperature if connected
   if (connected && dataChannel) {
@@ -5181,7 +5181,7 @@ els.temperatureSlider.addEventListener('input', (e) => {
 // Memory enabled toggle
 els.memoryEnabled.addEventListener('change', (e) => {
   const enabled = e.target.checked;
-  localStorage.setItem('atlasVoice_memoryEnabled', enabled.toString());
+  localStorage.setItem('grokVoice_memoryEnabled', enabled.toString());
   
   // Update AI instructions with memory setting if connected
   if (connected && dataChannel) {
@@ -5192,7 +5192,7 @@ els.memoryEnabled.addEventListener('change', (e) => {
 // Special instructions textarea
 els.specialInstructions.addEventListener('input', (e) => {
   const instructions = e.target.value;
-  localStorage.setItem('atlasVoice_specialInstructions', instructions);
+  localStorage.setItem('grokVoice_specialInstructions', instructions);
   
   // Update AI instructions with new special instructions if connected
   if (connected && dataChannel) {
@@ -5223,7 +5223,7 @@ els.viewKnowledgeBtn.addEventListener('click', async () => {
 
 // Clear memory
 els.clearMemoryBtn.addEventListener('click', async () => {
-  if (confirm('Are you sure you want to clear Atlas\'s memory? This cannot be undone.')) {
+  if (confirm('Are you sure you want to clear Grok\'s memory? This cannot be undone.')) {
     try {
       const serverUrl = els.serverUrl.value.trim();
       const response = await fetch(`${serverUrl}/api/knowledge/clear`, {
@@ -5247,15 +5247,15 @@ els.clearMemoryBtn.addEventListener('click', async () => {
 // Load saved settings from localStorage
 function loadSettings() {
   console.log('💾 Loading saved settings...');
-  const savedApiKey = localStorage.getItem('atlasVoice_apiKey');
-  const savedServerUrl = localStorage.getItem('atlasVoice_serverUrl');
-  const savedDesktopMode = localStorage.getItem('atlasVoice_desktopMode');
-  const savedContinuousMode = localStorage.getItem('atlasVoice_continuousMode');
-  const savedVisionMode = localStorage.getItem('atlasVoice_visionMode');
-  const savedWakeWordMode = localStorage.getItem('atlasVoice_wakeWordMode');
-  const savedTemperature = localStorage.getItem('atlasVoice_temperature');
-  const savedMemoryEnabled = localStorage.getItem('atlasVoice_memoryEnabled');
-  const savedSpecialInstructions = localStorage.getItem('atlasVoice_specialInstructions');
+  const savedApiKey = localStorage.getItem('grokVoice_apiKey');
+  const savedServerUrl = localStorage.getItem('grokVoice_serverUrl');
+  const savedDesktopMode = localStorage.getItem('grokVoice_desktopMode');
+  const savedContinuousMode = localStorage.getItem('grokVoice_continuousMode');
+  const savedVisionMode = localStorage.getItem('grokVoice_visionMode');
+  const savedWakeWordMode = localStorage.getItem('grokVoice_wakeWordMode');
+  const savedTemperature = localStorage.getItem('grokVoice_temperature');
+  const savedMemoryEnabled = localStorage.getItem('grokVoice_memoryEnabled');
+  const savedSpecialInstructions = localStorage.getItem('grokVoice_specialInstructions');
 
   console.log('Settings:', { hasApiKey: !!savedApiKey, savedServerUrl, savedDesktopMode, savedContinuousMode, savedVisionMode, savedWakeWordMode, savedTemperature, savedMemoryEnabled, savedSpecialInstructions });
 
@@ -5310,7 +5310,7 @@ function loadSettings() {
   }
 
   // Load auto-connect setting
-  const savedAutoConnect = localStorage.getItem('atlasVoice_autoConnect');
+  const savedAutoConnect = localStorage.getItem('grokVoice_autoConnect');
   if (savedAutoConnect === 'true') {
     const autoConnectCheckbox = document.getElementById('autoConnect');
     if (autoConnectCheckbox) {
@@ -5336,20 +5336,20 @@ function saveSettings() {
 
   console.log('💾 Saving settings:', { ...settings, apiKey: settings.apiKey ? '[REDACTED]' : '' });
 
-  localStorage.setItem('atlasVoice_apiKey', settings.apiKey);
-  localStorage.setItem('atlasVoice_serverUrl', settings.serverUrl);
-  localStorage.setItem('atlasVoice_desktopMode', String(settings.desktopMode));
-  localStorage.setItem('atlasVoice_continuousMode', String(settings.continuousMode));
-  localStorage.setItem('atlasVoice_wakeWordMode', String(settings.wakeWordMode));
-  localStorage.setItem('atlasVoice_visionMode', String(settings.visionMode));
-  localStorage.setItem('atlasVoice_temperature', settings.temperature);
-  localStorage.setItem('atlasVoice_memoryEnabled', String(settings.memoryEnabled));
-  localStorage.setItem('atlasVoice_specialInstructions', settings.specialInstructions);
+  localStorage.setItem('grokVoice_apiKey', settings.apiKey);
+  localStorage.setItem('grokVoice_serverUrl', settings.serverUrl);
+  localStorage.setItem('grokVoice_desktopMode', String(settings.desktopMode));
+  localStorage.setItem('grokVoice_continuousMode', String(settings.continuousMode));
+  localStorage.setItem('grokVoice_wakeWordMode', String(settings.wakeWordMode));
+  localStorage.setItem('grokVoice_visionMode', String(settings.visionMode));
+  localStorage.setItem('grokVoice_temperature', settings.temperature);
+  localStorage.setItem('grokVoice_memoryEnabled', String(settings.memoryEnabled));
+  localStorage.setItem('grokVoice_specialInstructions', settings.specialInstructions);
 
   // Save auto-connect setting
   const autoConnectCheckbox = document.getElementById('autoConnect');
   if (autoConnectCheckbox) {
-    localStorage.setItem('atlasVoice_autoConnect', String(autoConnectCheckbox.checked));
+    localStorage.setItem('grokVoice_autoConnect', String(autoConnectCheckbox.checked));
   }
 
   console.log('✅ Settings saved');
@@ -5362,7 +5362,7 @@ function showKnowledgeModal(data) {
   modal.innerHTML = `
     <div class="knowledge-modal-content">
       <div class="knowledge-modal-header">
-        <h3>🧠 Atlas Knowledge Base</h3>
+        <h3>🧠 Grok Knowledge Base</h3>
         <button class="knowledge-modal-close">&times;</button>
       </div>
       <div class="knowledge-modal-body">
@@ -5641,7 +5641,7 @@ const BrowserView = (() => {
 
   function loadSettings() {
     try {
-      const settings = JSON.parse(localStorage.getItem('atlas-settings') || '{}');
+      const settings = JSON.parse(localStorage.getItem('grok-settings') || '{}');
       if (settings.browserViewMode && elements.modeToggle) {
         elements.modeToggle.checked = true;
         open();
@@ -5653,9 +5653,9 @@ const BrowserView = (() => {
 
   function saveSettings() {
     try {
-      const settings = JSON.parse(localStorage.getItem('atlas-settings') || '{}');
+      const settings = JSON.parse(localStorage.getItem('grok-settings') || '{}');
       settings.browserViewMode = elements.modeToggle?.checked || false;
-      localStorage.setItem('atlas-settings', JSON.stringify(settings));
+      localStorage.setItem('grok-settings', JSON.stringify(settings));
     } catch (error) {
       console.error('Failed to save browser view settings:', error);
     }
@@ -5707,7 +5707,7 @@ checkFirstTimeUse();
 
 // Auto-connect if enabled
 setTimeout(() => {
-  const savedAutoConnect = localStorage.getItem('atlasVoice_autoConnect');
+  const savedAutoConnect = localStorage.getItem('grokVoice_autoConnect');
   if (savedAutoConnect === 'true' && !connected) {
     console.log('🔌 Auto-connecting...');
     els.connectBtn.click();
@@ -5814,7 +5814,7 @@ async function showControlToggleOnAllTabs() {
         });
       }
     }
-    atlasHasControl = true;
+    grokHasControl = true;
     console.log('✅ Control toggle shown on all tabs');
   } catch (error) {
     console.error('Error showing control toggle:', error);
@@ -5840,15 +5840,15 @@ async function hideControlToggleOnAllTabs() {
 
 // Listen for control toggle messages from content script
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-  if (request.action === 'atlasControlToggle') {
-    atlasHasControl = request.active;
-    console.log(`🎛️ Control toggle: Atlas ${atlasHasControl ? 'ACTIVE' : 'PAUSED'}`);
+  if (request.action === 'grokControlToggle') {
+    grokHasControl = request.active;
+    console.log(`🎛️ Control toggle: Grok ${grokHasControl ? 'ACTIVE' : 'PAUSED'}`);
 
     // Update status in UI
-    if (atlasHasControl) {
-      addMessage('system', '✅ Atlas resumed control');
+    if (grokHasControl) {
+      addMessage('system', '✅ Grok resumed control');
     } else {
-      addMessage('system', '⏸️ Atlas paused - You have control');
+      addMessage('system', '⏸️ Grok paused - You have control');
     }
 
     sendResponse({ success: true });
@@ -5856,14 +5856,14 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   }
 });
 
-// Check if Atlas should proceed with action
-function canAtlasAct() {
-  if (!atlasHasControl) {
-    console.log('⏸️ Atlas action blocked - User has control');
+// Check if Grok should proceed with action
+function canGrokAct() {
+  if (!grokHasControl) {
+    console.log('⏸️ Grok action blocked - User has control');
     return false;
   }
   return true;
 }
 
-// Initialize Browser View (temporarily disabled to fix Atlas functionality)
+// Initialize Browser View (temporarily disabled to fix Grok functionality)
 // BrowserView.init();
