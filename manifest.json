@@ -1,0 +1,66 @@
+{
+  "manifest_version": 3,
+  "name": "Atlas Voice Panel",
+  "version": "0.3.2",
+  "description": "Voice AI assistant with Desktop Commander - screen capture and automation capabilities",
+  "permissions": [
+    "storage",
+    "sidePanel",
+    "activeTab",
+    "desktopCapture",
+    "tabCapture",
+    "tabs",
+    "downloads",
+    "scripting",
+    "webNavigation",
+    "notifications",
+    "alarms"
+  ],
+  "host_permissions": [
+    "https://api.openai.com/*",
+    "https://atlas-extension-chat-voice.vercel.app/*",
+    "http://localhost:8787/*",
+    "<all_urls>"
+  ],
+  "icons": {
+    "16": "assets/icon-16.png",
+    "48": "assets/icon-48.png",
+    "128": "assets/icon-128.png"
+  },
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
+  "action": {
+    "default_title": "Atlas Voice Panel",
+    "default_icon": {
+      "16": "assets/icon-16.png",
+      "48": "assets/icon-48.png",
+      "128": "assets/icon-128.png"
+    }
+  },
+  "side_panel": {
+    "default_path": "sidepanel.html"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "<all_urls>"
+      ],
+      "js": [
+        "content.js"
+      ],
+      "run_at": "document_end"
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "assets/mic.svg"
+      ],
+      "matches": [
+        "<all_urls>"
+      ]
+    }
+  ]
+}

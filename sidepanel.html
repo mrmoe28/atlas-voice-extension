@@ -1,0 +1,586 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Atlas Voice</title>
+  <link rel="stylesheet" href="styles.css" />
+  <!-- PDF.js library for PDF text extraction (local copy for CSP compliance) -->
+  <script src="lib/pdf.min.js"></script>
+</head>
+<body>
+  <!-- Update Available Banner -->
+  <div id="update-banner" style="display:none; position:sticky; top:0; z-index:10000; padding:12px 14px; background:linear-gradient(135deg, #667eea 0%, #764ba2 100%); color:#fff; font-family:system-ui, sans-serif;">
+    <div style="display:flex; align-items:center; gap:10px;">
+      <span style="font-size:24px;">🎉</span>
+      <div style="flex:1;">
+        <strong style="font-size:15px;">Atlas Update Available!</strong>
+        <div id="update-version-text" style="margin-top:4px; font-size:13px; opacity:0.95;">
+          Version <span id="update-version"></span> is ready to download.
+        </div>
+      </div>
+      <button id="update-install-btn" style="padding:8px 16px; border:none; background:#fff; color:#667eea; border-radius:6px; font-weight:600; cursor:pointer; font-size:13px;">
+        Download
+      </button>
+      <button id="update-dismiss-btn" style="padding:8px 12px; border:1px solid rgba(255,255,255,0.3); background:transparent; color:#fff; border-radius:6px; cursor:pointer; font-size:13px;">
+        Later
+      </button>
+    </div>
+  </div>
+
+  <div id="mic-permission-banner" style="display:none; position:sticky; top:0; z-index:9999; padding:10px 12px; background:#fff7e6; border-bottom:1px solid #ffd39c; font-family:system-ui, sans-serif;">
+    <strong>Microphone access needed.</strong>
+    <div style="margin-top:6px; font-size:13px; line-height:1.35;">
+      Click the microphone icon in your browser's address bar and allow access. If you previously blocked it, open <code>chrome://settings/content/microphone</code> and allow access for this extension.
+    </div>
+    <div style="margin-top:8px; display:flex; gap:8px;">
+      <button id="mic-permission-try-again" style="padding:6px 10px; border:1px solid #222; background:#fff; cursor:pointer;">Try again</button>
+      <button id="mic-permission-dismiss" style="padding:6px 10px; border:1px solid #bbb; background:#f6f6f6; cursor:pointer;">Dismiss</button>
+    </div>
+  </div>
+  
+  <div class="app">
+    <!-- Fixed Header -->
+    <header class="header-fixed">
+      <button class="menu-btn" id="menuBtn">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="3" y1="12" x2="21" y2="12"/>
+          <line x1="3" y1="6" x2="21" y2="6"/>
+          <line x1="3" y1="18" x2="21" y2="18"/>
+        </svg>
+      </button>
+      <h1>Atlas Voice</h1>
+      <div class="connection-status">
+        <span class="status-dot" id="statusDot"></span>
+      </div>
+    </header>
+
+    <!-- Settings Modal -->
+    <div class="settings-modal" id="settingsModal" role="dialog" aria-labelledby="settings-title" aria-hidden="true">
+      <div class="settings-backdrop" id="settingsBackdrop" tabindex="-1"></div>
+      <div class="settings-content" role="document">
+        <div class="settings-header">
+          <h2 id="settings-title">Settings</h2>
+          <button class="settings-close" id="settingsClose" aria-label="Close settings" tabindex="0">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="18" y1="6" x2="6" y2="18"/>
+              <line x1="6" y1="6" x2="18" y2="18"/>
+            </svg>
+          </button>
+        </div>
+        <div class="settings-body" tabindex="0">
+        <div class="setting-item">
+          <label>OpenAI API Key</label>
+          <input id="apiKey"
+                 type="password"
+                 placeholder="sk-..."
+                 class="server-input" />
+          <p class="mode-description">Enter your OpenAI API key to connect directly (stored locally)</p>
+        </div>
+
+        <div class="setting-item">
+          <label>Server URL (Optional)</label>
+          <input id="serverUrl"
+                 value="https://atlas-voice-extension.vercel.app"
+                 placeholder="Server URL"
+                 class="server-input" />
+          <p class="mode-description">Leave blank to use your API key above, or use a custom server</p>
+        </div>
+
+        <div class="setting-item">
+          <label class="mode-toggle">
+            <input type="checkbox" id="autoConnect" />
+            <span>Auto-connect on startup</span>
+          </label>
+          <p class="mode-description">Automatically connect when extension opens</p>
+        </div>
+
+        <!-- Browser View Mode Setting (temporarily disabled) -->
+        <!--
+        <div class="setting-item">
+          <label class="mode-toggle">
+            <input type="checkbox" id="browserViewMode" />
+            <span>Browser View mode</span>
+          </label>
+          <p class="mode-description">Open websites directly in the extension panel</p>
+        </div>
+        -->
+
+        <div class="setting-item">
+          <label class="mode-toggle">
+            <input type="checkbox" id="continuousMode" />
+            <span>Continuous mode</span>
+          </label>
+        </div>
+
+        <div class="setting-item">
+          <label class="mode-toggle">
+            <input type="checkbox" id="desktopMode" />
+            <span>Desktop Commander mode</span>
+          </label>
+          <p class="mode-description">Enable voice-controlled desktop automation</p>
+        </div>
+
+        <div class="setting-item">
+          <label class="mode-toggle">
+            <input type="checkbox" id="wakeWordMode" />
+            <span>Wake Word Detection</span>
+          </label>
+          <p class="mode-description">Activate Atlas by saying "Hey Atlas"</p>
+        </div>
+
+        <div class="setting-item">
+          <label for="temperatureSlider" class="slider-label">
+            <span>Atlas Creativity</span>
+            <span class="slider-value" id="temperatureValue">0.7</span>
+          </label>
+          <div class="slider-container">
+            <input type="range" 
+                   id="temperatureSlider" 
+                   min="0.1" 
+                   max="2.0" 
+                   step="0.1" 
+                   value="0.7" 
+                   class="temperature-slider" />
+            <div class="slider-labels">
+              <span class="slider-label-left">Conservative</span>
+              <span class="slider-label-right">Creative</span>
+            </div>
+          </div>
+          <p class="mode-description">Higher values = more creative responses, lower values = more focused responses</p>
+        </div>
+
+        <div class="setting-item">
+          <label class="mode-toggle">
+            <input type="checkbox" id="memoryEnabled" />
+            <span>Memory & Learning</span>
+          </label>
+          <p class="mode-description">Atlas remembers conversations and learns from your patterns</p>
+        </div>
+
+        <div class="setting-item">
+          <label for="specialInstructions" class="text-label">Special Instructions</label>
+          <textarea id="specialInstructions" 
+                    class="special-instructions-textarea" 
+                    placeholder="Add custom instructions for Atlas (e.g., 'Always be concise', 'Use technical terms', 'Be friendly and casual')"
+                    rows="2"></textarea>
+          <p class="mode-description">Customize how Atlas responds to you</p>
+        </div>
+
+        <div class="setting-item">
+          <label for="knowledgeBase" class="text-label">Knowledge Base</label>
+          <div class="knowledge-base-controls">
+            <button id="viewKnowledgeBtn" class="knowledge-btn">View Knowledge</button>
+            <button id="clearMemoryBtn" class="knowledge-btn secondary">Clear Memory</button>
+          </div>
+          <p class="mode-description">Manage Atlas's memory and learned patterns</p>
+        </div>
+
+        <div class="setting-actions">
+          <button id="connectBtn" class="connect-btn">Connect</button>
+          <button id="interruptBtn" class="interrupt-btn" disabled>Stop</button>
+        </div>
+
+        <div class="setting-item advanced-options">
+          <label class="mode-toggle">
+            <input type="checkbox" id="visionMode" />
+            <span>Screen Vision mode (Advanced)</span>
+          </label>
+          <p class="mode-description">AI can see your screen when you ask</p>
+        </div>
+
+        <div class="setting-item advanced-options" id="captureScreenContainer" style="display:none;">
+          <button id="captureScreenBtn" class="capture-btn">📸 Capture Screen</button>
+        </div>
+
+        <!-- Help Section -->
+        <div class="help-section">
+          <div class="help-header">
+            <h3>🎤 Voice Commands</h3>
+            <button id="toggleHelpBtn" class="toggle-help-btn">Show Commands</button>
+          </div>
+          <div class="help-content" id="helpContent" style="display:none;">
+            <div class="command-category">
+              <h4>📁 File & Folder Management</h4>
+              <div class="command-list">
+                <div class="command-item">
+                  <span class="command-example">"Open my downloads folder"</span>
+                  <span class="command-desc">Opens Downloads folder</span>
+                </div>
+                <div class="command-item">
+                  <span class="command-example">"Create a folder called TestFolder"</span>
+                  <span class="command-desc">Creates new folder</span>
+                </div>
+                <div class="command-item">
+                  <span class="command-example">"Delete the old file"</span>
+                  <span class="command-desc">Deletes specified file</span>
+                </div>
+                <div class="command-item">
+                  <span class="command-example">"Rename my document to final version"</span>
+                  <span class="command-desc">Renames file/folder</span>
+                </div>
+                <div class="command-item">
+                  <span class="command-example">"Copy this file to desktop"</span>
+                  <span class="command-desc">Copies file to destination</span>
+                </div>
+                <div class="command-item">
+                  <span class="command-example">"Move this to trash"</span>
+                  <span class="command-desc">Moves file to destination</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="command-category">
+              <h4>🌐 Browser Control</h4>
+              <div class="command-list">
+                <div class="command-item">
+                  <span class="command-example">"Open Google"</span>
+                  <span class="command-desc">Navigates to website</span>
+                </div>
+                <div class="command-item">
+                  <span class="command-example">"Refresh the page"</span>
+                  <span class="command-desc">Reloads current page</span>
+                </div>
+                <div class="command-item">
+                  <span class="command-example">"Go back"</span>
+                  <span class="command-desc">Browser back button</span>
+                </div>
+                <div class="command-item">
+                  <span class="command-example">"Go forward"</span>
+                  <span class="command-desc">Browser forward button</span>
+                </div>
+                <div class="command-item">
+                  <span class="command-example">"Open new tab"</span>
+                  <span class="command-desc">Opens new browser tab</span>
+                </div>
+                <div class="command-item">
+                  <span class="command-example">"Close tab"</span>
+                  <span class="command-desc">Closes current tab</span>
+                </div>
+                <div class="command-item">
+                  <span class="command-example">"Take screenshot"</span>
+                  <span class="command-desc">Captures page screenshot</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="command-category">
+              <h4>🖱️ Mouse & Click Control</h4>
+              <div class="command-list">
+                <div class="command-item">
+                  <span class="command-example">"Click the search button"</span>
+                  <span class="command-desc">Clicks element by text</span>
+                </div>
+                <div class="command-item">
+                  <span class="command-example">"Double click the file"</span>
+                  <span class="command-desc">Double-clicks element</span>
+                </div>
+                <div class="command-item">
+                  <span class="command-example">"Right click here"</span>
+                  <span class="command-desc">Right-clicks element</span>
+                </div>
+                <div class="command-item">
+                  <span class="command-example">"Hover over button"</span>
+                  <span class="command-desc">Hovers over element</span>
+                </div>
+                <div class="command-item">
+                  <span class="command-example">"Drag this to there"</span>
+                  <span class="command-desc">Drags element to target</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="command-category">
+              <h4>⌨️ Keyboard & Text</h4>
+              <div class="command-list">
+                <div class="command-item">
+                  <span class="command-example">"Type hello world"</span>
+                  <span class="command-desc">Types text into field</span>
+                </div>
+                <div class="command-item">
+                  <span class="command-example">"Clear the field"</span>
+                  <span class="command-desc">Clears input field</span>
+                </div>
+                <div class="command-item">
+                  <span class="command-example">"Select all"</span>
+                  <span class="command-desc">Selects all text</span>
+                </div>
+                <div class="command-item">
+                  <span class="command-example">"Copy this text"</span>
+                  <span class="command-desc">Copies text to clipboard</span>
+                </div>
+                <div class="command-item">
+                  <span class="command-example">"Paste hello"</span>
+                  <span class="command-desc">Pastes text from clipboard</span>
+                </div>
+                <div class="command-item">
+                  <span class="command-example">"Press Enter"</span>
+                  <span class="command-desc">Presses specific key</span>
+                </div>
+                <div class="command-item">
+                  <span class="command-example">"Press Ctrl+C"</span>
+                  <span class="command-desc">Presses key combination</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="command-category">
+              <h4>📜 Page Navigation</h4>
+              <div class="command-list">
+                <div class="command-item">
+                  <span class="command-example">"Scroll down"</span>
+                  <span class="command-desc">Scrolls page down</span>
+                </div>
+                <div class="command-item">
+                  <span class="command-example">"Scroll up"</span>
+                  <span class="command-desc">Scrolls page up</span>
+                </div>
+                <div class="command-item">
+                  <span class="command-example">"Scroll to top"</span>
+                  <span class="command-desc">Goes to page top</span>
+                </div>
+                <div class="command-item">
+                  <span class="command-example">"Scroll to bottom"</span>
+                  <span class="command-desc">Goes to page bottom</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="command-category">
+              <h4>🔊 System Control</h4>
+              <div class="command-list">
+                <div class="command-item">
+                  <span class="command-example">"Turn up the volume"</span>
+                  <span class="command-desc">Increases system volume</span>
+                </div>
+                <div class="command-item">
+                  <span class="command-example">"Turn down the volume"</span>
+                  <span class="command-desc">Decreases system volume</span>
+                </div>
+                <div class="command-item">
+                  <span class="command-example">"Mute the volume"</span>
+                  <span class="command-desc">Mutes system audio</span>
+                </div>
+                <div class="command-item">
+                  <span class="command-example">"Make it brighter"</span>
+                  <span class="command-desc">Increases screen brightness</span>
+                </div>
+                <div class="command-item">
+                  <span class="command-example">"Make it dimmer"</span>
+                  <span class="command-desc">Decreases screen brightness</span>
+                </div>
+                <div class="command-item">
+                  <span class="command-example">"Lock my computer"</span>
+                  <span class="command-desc">Locks the screen</span>
+                </div>
+                <div class="command-item">
+                  <span class="command-example">"Sleep my computer"</span>
+                  <span class="command-desc">Puts computer to sleep</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="command-category">
+              <h4>🔍 Information & Search</h4>
+              <div class="command-list">
+                <div class="command-item">
+                  <span class="command-example">"What time is it"</span>
+                  <span class="command-desc">Gets current time</span>
+                </div>
+                <div class="command-item">
+                  <span class="command-example">"What's today's date"</span>
+                  <span class="command-desc">Gets current date</span>
+                </div>
+                <div class="command-item">
+                  <span class="command-example">"Search for AI"</span>
+                  <span class="command-desc">Searches Google</span>
+                </div>
+                <div class="command-item">
+                  <span class="command-example">"Search YouTube for music"</span>
+                  <span class="command-desc">Searches YouTube</span>
+                </div>
+                <div class="command-item">
+                  <span class="command-example">"Search Wikipedia for history"</span>
+                  <span class="command-desc">Searches Wikipedia</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="help-footer">
+              <p><strong>💡 Tip:</strong> Atlas Voice understands natural language. Just speak naturally and it will understand your intent!</p>
+              <p><strong>🎯 Note:</strong> Desktop Commander mode must be enabled for system control commands.</p>
+            </div>
+          </div>
+        </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Content Container (Always visible, settings slides over it) -->
+    <div class="content-area">
+      <!-- Browser View Container (temporarily disabled) -->
+      <!--
+      <div class="browser-view-container" id="browserViewContainer" style="display:none;">
+        <div class="browser-view-header">
+          <div class="browser-view-controls">
+            <button id="browserBackBtn" class="browser-btn" title="Go Back">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M19 12H5M12 19l-7-7 7-7"/>
+              </svg>
+            </button>
+            <button id="browserForwardBtn" class="browser-btn" title="Go Forward">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M5 12h14M12 5l7 7-7 7"/>
+              </svg>
+            </button>
+            <button id="browserRefreshBtn" class="browser-btn" title="Refresh">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/>
+                <path d="M21 3v5h-5"/>
+                <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/>
+                <path d="M3 21v-5h5"/>
+              </svg>
+            </button>
+            <div class="browser-url-bar">
+              <input type="text" id="browserUrlInput" placeholder="Enter URL..." />
+              <button id="browserGoBtn" class="browser-go-btn">Go</button>
+            </div>
+            <button id="browserCloseBtn" class="browser-btn close" title="Close Browser View">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="18" y1="6" x2="6" y2="18"/>
+                <line x1="6" y1="6" x2="18" y2="18"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+        <div class="browser-view-content">
+          <div class="browser-view-info">
+            <div class="browser-view-icon">🌐</div>
+            <h3>Browser View</h3>
+            <p>URLs will open in new tabs for better security and functionality.</p>
+            <p>Use the navigation controls above to browse the web.</p>
+          </div>
+        </div>
+      </div>
+      -->
+
+      <!-- Centered Voice Orb (Always centered in remaining space) -->
+      <div class="orb-container" id="voiceOrbWrapper">
+        <!-- Wake Word Indicator -->
+        <div id="wakeWordIndicator" class="wake-word-indicator" style="display: none;">
+          <span class="wake-word-pulse">👂</span>
+          <span class="wake-word-text">Listening for "Hey Atlas"</span>
+        </div>
+
+        <div class="voice-orb-large" id="voiceOrb">
+          <div class="orb-inner"></div>
+          <div class="orb-ring"></div>
+          <div class="orb-ring ring-2"></div>
+          <div class="orb-ring ring-3"></div>
+        </div>
+        <p class="orb-status" id="orbStatus">Click Connect in menu to start</p>
+      </div>
+
+      <!-- Chat Messages (Replaces orb when conversation starts) -->
+      <div class="chat-container" id="chatContainer" style="display:none;">
+        <!-- Messages will be added here dynamically -->
+      </div>
+    </div>
+
+    <!-- Fixed Footer with Voice Button & Text Input -->
+    <footer class="footer-fixed">
+      <!-- Text Input Container -->
+      <div class="text-input-container" id="textInputContainer">
+        <button id="fileUploadBtn" class="icon-btn" title="Upload file">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/>
+          </svg>
+        </button>
+        <input type="file" id="fileInput" style="display: none;" accept="image/*,.pdf,.txt,.md,.json,.js,.html,.css" />
+
+        <input
+          type="text"
+          id="textInput"
+          class="text-input"
+          placeholder="Type a message..."
+          disabled
+        />
+
+        <button id="textSendBtn" class="icon-btn send-btn" title="Send message" disabled>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="22" y1="2" x2="11" y2="13"/>
+            <polygon points="22 2 15 22 11 13 2 9 22 2"/>
+          </svg>
+        </button>
+      </div>
+
+      <!-- Voice Control Container -->
+      <div class="voice-controls-container">
+        <!-- Mute Button -->
+        <button id="muteBtn" class="mute-btn" disabled title="Mute Atlas voice">
+          <svg id="muteIcon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
+            <path d="M15.54 8.46a5 5 0 0 1 0 7.07"/>
+            <path d="M19.07 4.93a10 10 0 0 1 0 14.14"/>
+          </svg>
+          <svg id="unmutedIcon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:none;">
+            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
+            <line x1="22" y1="9" x2="16" y2="15"/>
+            <line x1="16" y1="9" x2="22" y2="15"/>
+          </svg>
+        </button>
+
+        <!-- Voice Button -->
+        <button id="voiceBtn" class="voice-btn-large" disabled>
+          <div class="mic-icon-large">
+            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/>
+              <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+              <line x1="12" x2="12" y1="19" y2="22"/>
+            </svg>
+          </div>
+        </button>
+      </div>
+      <span id="voiceStatus" class="voice-status">Hold to talk</span>
+    </footer>
+
+    <!-- Hidden Web Speech Fallback -->
+    <div style="display:none;">
+      <select id="voiceSelect"></select>
+      <button id="recStart">Start STT</button>
+      <button id="recStop">Stop STT</button>
+      <button id="ttsSay">Speak</button>
+    </div>
+
+    <!-- Permission Popup Modal -->
+    <div class="permission-modal" id="permissionModal">
+      <div class="permission-content">
+        <h2>Welcome to Atlas Voice!</h2>
+        <p>To use voice features, Atlas Voice needs microphone access.</p>
+        <div class="permission-steps">
+          <div class="permission-step">
+            <div class="step-number">1</div>
+            <div class="step-text">Click "Allow Microphone" below</div>
+          </div>
+          <div class="permission-step">
+            <div class="step-number">2</div>
+            <div class="step-text">Click "Allow" when your browser prompts for permission</div>
+          </div>
+          <div class="permission-step">
+            <div class="step-number">3</div>
+            <div class="step-text">Connect to server and start chatting!</div>
+          </div>
+        </div>
+        <div class="permission-actions">
+          <button id="requestPermissionBtn" class="permission-btn primary">Allow Microphone</button>
+          <button id="skipPermissionBtn" class="permission-btn secondary">Maybe Later</button>
+        </div>
+        <p class="permission-note">You can change permissions anytime in your browser settings</p>
+      </div>
+    </div>
+  </div>
+
+  <script src="lib/update-ui.js" type="module"></script>
+  <script src="sidepanel.js" type="module"></script>
+</body>
+</html>
