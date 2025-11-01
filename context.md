@@ -1,10 +1,16 @@
 # Grok Voice Extension - Fix History and Updates
 
-## Latest Update: Rebranding from Atlas to Grok
+## Latest Fix: Ephemeral Key Error
+- Fixed "Failed to get ephemeral key" error
+- Added proper error handling for missing Grok server
+- Improved error messages to guide users to use their OpenAI API key
+- Cleared default server URL since Grok server not yet deployed
+- Users can now use their own OpenAI API key while waiting for Grok server
+
+## Previous Update: Rebranding from Atlas to Grok  
 - Changed all references from "Atlas" to "Grok" throughout the extension
 - Updated manifest.json name and description
 - Updated all UI text and wake word to "Hey Grok"
-- Changed API endpoint to grok-extension-chat-voice.vercel.app
 - Version bumped to 0.4.0
 
 ## Previous: Extension Icon Loading Error Fix

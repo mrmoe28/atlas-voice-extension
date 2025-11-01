@@ -367,9 +367,17 @@ async function getEphemeralToken(serverBase) {
   }
 
   console.log('🔑 Fetching credentials from server');
-  const r = await fetch(`${serverBase}/api/ephemeral`);
-  if (!r.ok) throw new Error('Failed to get ephemeral key');
-  return r.json();
+  try {
+    const r = await fetch(`${serverBase}/api/ephemeral`);
+    if (!r.ok) {
+      console.error(`Server returned ${r.status}: ${r.statusText}`);
+      throw new Error(`Server not available. Please use your own OpenAI API key in settings or wait for the Grok server to be deployed.`);
+    }
+    return r.json();
+  } catch (error) {
+    console.error('Failed to fetch ephemeral key:', error);
+    throw new Error('Grok server is not yet deployed. Please enter your OpenAI API key in settings to use the extension.');
+  }
 }
 
 async function ensureMic() {
