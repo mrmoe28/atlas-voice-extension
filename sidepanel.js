@@ -349,35 +349,27 @@ window.addEventListener('resize', () => {
 });
 
 async function getEphemeralToken(serverBase) {
-  // Check if user has provided a local API key
-  const localApiKey = els.apiKey.value.trim();
-
-  if (localApiKey) {
-    console.log('🔑 Using local API key');
-    return {
-      client_secret: localApiKey,
-      model: 'gpt-4o-realtime-preview-2024-12-17',
-      endpoint: 'https://api.openai.com/v1/realtime'
-    };
+  // Check if user has provided a Grok API key
+  const grokApiKey = els.apiKey.value.trim();
+  
+  if (!grokApiKey) {
+    throw new Error('Please enter your Grok API key from x.ai in settings');
   }
 
-  // Fall back to server endpoint if no local key
-  if (!serverBase) {
-    throw new Error('Please provide either an API key or server URL');
-  }
-
-  console.log('🔑 Fetching credentials from server');
-  try {
-    const r = await fetch(`${serverBase}/api/ephemeral`);
-    if (!r.ok) {
-      console.error(`Server returned ${r.status}: ${r.statusText}`);
-      throw new Error(`Server not available. Please use your own OpenAI API key in settings or wait for the Grok server to be deployed.`);
-    }
-    return r.json();
-  } catch (error) {
-    console.error('Failed to fetch ephemeral key:', error);
-    throw new Error('Grok server is not yet deployed. Please enter your OpenAI API key in settings to use the extension.');
-  }
+  // Use Grok API configuration
+  const grokEndpoint = serverBase || 'https://api.x.ai/v1';
+  
+  console.log('🔑 Using Grok API key');
+  console.log('🌐 Grok endpoint:', grokEndpoint);
+  
+  // Return Grok configuration
+  // Note: Grok uses different models and endpoints than OpenAI
+  return {
+    client_secret: grokApiKey,
+    model: 'grok-beta', // Grok model name
+    endpoint: `${grokEndpoint}/chat/completions`, // Grok chat endpoint
+    api_type: 'grok'
+  };
 }
 
 async function ensureMic() {
