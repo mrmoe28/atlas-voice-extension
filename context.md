@@ -1,6 +1,14 @@
 # Grok Voice Extension - Fix History and Updates
 
-## Latest Fix: Ephemeral Key Error
+## Latest Fix: Robust Connection Handling
+- Added comprehensive WebRTC connection state monitoring
+- Implemented automatic reconnection with 3 retry attempts
+- Added ICE connection state monitoring for better failure detection
+- Added 30-second connection timeout to prevent hanging
+- Connection now recovers automatically from temporary disconnections
+- Clear status messages showing connection state to user
+
+## Previous Fix: Ephemeral Key Error
 - Fixed "Failed to get ephemeral key" error
 - Added proper error handling for missing Grok server
 - Improved error messages to guide users to use their OpenAI API key

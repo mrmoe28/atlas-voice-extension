@@ -1044,14 +1044,95 @@ async function connectRealtime() {
     // Create new peer connection
     pc = new RTCPeerConnection();
     
-    // Add connection state change handler
+    // Add robust connection state change handler
+    let reconnectAttempts = 0;
+    const maxReconnectAttempts = 3;
+    
     pc.onconnectionstatechange = () => {
       console.log('🔗 Connection state:', pc.connectionState);
-      if (pc.connectionState === 'failed' || pc.connectionState === 'disconnected') {
-        console.log('❌ Connection failed or disconnected');
-        teardown();
+      els.orbStatus.textContent = `Connection: ${pc.connectionState}`;
+      
+      switch(pc.connectionState) {
+        case 'connected':
+          console.log('✅ WebRTC connected successfully');
+          reconnectAttempts = 0;
+          els.orbStatus.textContent = 'Connected';
+          break;
+          
+        case 'connecting':
+          console.log('🔄 WebRTC connecting...');
+          break;
+          
+        case 'disconnected':
+          console.log('⚠️ Connection disconnected, attempting to recover...');
+          els.orbStatus.textContent = 'Connection lost - recovering...';
+          // Give it a moment to recover
+          setTimeout(() => {
+            if (pc && pc.connectionState === 'disconnected') {
+              console.log('❌ Connection did not recover');
+              handleConnectionFailure();
+            }
+          }, 5000);
+          break;
+          
+        case 'failed':
+          console.log('❌ Connection failed');
+          handleConnectionFailure();
+          break;
+          
+        case 'closed':
+          console.log('🔒 Connection closed');
+          break;
       }
     };
+    
+    function handleConnectionFailure() {
+      if (reconnectAttempts < maxReconnectAttempts) {
+        reconnectAttempts++;
+        console.log(`🔄 Attempting reconnect ${reconnectAttempts}/${maxReconnectAttempts}...`);
+        els.orbStatus.textContent = `Reconnecting (${reconnectAttempts}/${maxReconnectAttempts})...`;
+        teardown();
+        // Auto-reconnect after a short delay
+        setTimeout(() => {
+          if (!connected) {
+            console.log('🔄 Triggering reconnect...');
+            els.connectBtn.click();
+          }
+        }, 2000);
+      } else {
+        console.log('❌ Max reconnect attempts reached');
+        els.orbStatus.textContent = 'Connection failed - Please reconnect manually';
+        teardown();
+      }
+    }
+
+    // Add ICE connection state monitoring
+    pc.oniceconnectionstatechange = () => {
+      console.log('🧊 ICE connection state:', pc.iceConnectionState);
+      
+      if (pc.iceConnectionState === 'failed') {
+        console.log('❌ ICE connection failed - triggering reconnect');
+        handleConnectionFailure();
+      } else if (pc.iceConnectionState === 'disconnected') {
+        console.log('⚠️ ICE disconnected - may recover automatically');
+      }
+    };
+    
+    // Add connection timeout
+    const connectionTimeout = setTimeout(() => {
+      if (pc && pc.connectionState !== 'connected') {
+        console.log('⏱️ Connection timeout - taking too long to connect');
+        els.orbStatus.textContent = 'Connection timeout - retrying...';
+        handleConnectionFailure();
+      }
+    }, 30000); // 30 second timeout
+    
+    // Clear timeout on successful connection
+    pc.addEventListener('connectionstatechange', () => {
+      if (pc.connectionState === 'connected') {
+        clearTimeout(connectionTimeout);
+      }
+    });
 
     for (const track of micStream.getTracks()) pc.addTrack(track, micStream);
 
