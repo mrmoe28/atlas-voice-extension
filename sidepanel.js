@@ -349,27 +349,40 @@ window.addEventListener('resize', () => {
 });
 
 async function getEphemeralToken(serverBase) {
-  // Check if user has provided a Grok API key
-  const grokApiKey = els.apiKey.value.trim();
+  const apiKey = els.apiKey.value.trim();
   
-  if (!grokApiKey) {
-    throw new Error('Please enter your Grok API key from x.ai in settings');
+  if (!apiKey) {
+    throw new Error('Please enter your API key in settings (OpenAI for voice, or Grok for text-only)');
   }
 
-  // Use Grok API configuration
-  const grokEndpoint = serverBase || 'https://api.x.ai/v1';
+  // Check if it's an OpenAI key (starts with sk-) or Grok key (starts with xai-)
+  const isOpenAI = apiKey.startsWith('sk-');
+  const isGrok = apiKey.startsWith('xai-');
   
-  console.log('🔑 Using Grok API key');
-  console.log('🌐 Grok endpoint:', grokEndpoint);
-  
-  // Return Grok configuration
-  // Note: Grok uses different models and endpoints than OpenAI
-  return {
-    client_secret: grokApiKey,
-    model: 'grok-beta', // Grok model name
-    endpoint: `${grokEndpoint}/chat/completions`, // Grok chat endpoint
-    api_type: 'grok'
-  };
+  if (isOpenAI) {
+    // Use OpenAI API configuration for WebRTC voice
+    const openaiEndpoint = serverBase || 'https://api.openai.com/v1';
+    
+    console.log('🔑 Using OpenAI API key for WebRTC voice');
+    console.log('🌐 OpenAI endpoint:', openaiEndpoint);
+    
+    // For OpenAI WebRTC, we need to get an ephemeral token first
+    // This would normally be done server-side for security
+    // For now, we'll use the API key directly
+    return {
+      client_secret: apiKey,
+      model: 'gpt-4o-realtime-preview-2024-12-17', // OpenAI realtime model
+      endpoint: `${openaiEndpoint}/realtime`, // OpenAI WebRTC endpoint
+      api_type: 'openai'
+    };
+  } else if (isGrok) {
+    // Grok doesn't support WebRTC, so this will fail for voice
+    console.warn('⚠️ Grok API does not support WebRTC voice features');
+    console.warn('⚠️ To use voice features, please use an OpenAI API key instead');
+    throw new Error('Grok API does not support WebRTC voice. Please use OpenAI API key for voice features.');
+  } else {
+    throw new Error('Invalid API key. Please use either OpenAI (sk-...) or Grok (xai-...) API key.');
+  }
 }
 
 async function ensureMic() {
